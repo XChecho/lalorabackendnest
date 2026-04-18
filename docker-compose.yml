@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:16-alpine
+    container_name: lalora-postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-lalora}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-lalora_password}
+      POSTGRES_DB: ${DATABASE_NAME:-lalora_db}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./prisma/scripts:/docker-entrypoint-initdb.d # Optional: init scripts
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${DATABASE_USER:-lalora} -d ${DATABASE_NAME:-lalora_db}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - lalora-network
+    # Keep data even if container removed (volume handles persistence)
+
+  # NestJS Backend Service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lalora-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Computed DATABASE_URL pointing to postgres service
+      DATABASE_URL: postgresql://${DATABASE_USER:-lalora}:${DATABASE_PASSWORD:-lalora_password}@postgres:5432/${DATABASE_NAME:-lalora_db}
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3000}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      LOG_FILE_ENABLED: ${LOG_FILE_ENABLED:-false}
+    ports:
+      - '3000:3000'
+    volumes:
+      # Bind mount source code for hot reload
+      - .:/app
+      # Exclude node_modules from host to avoid conflicts
+      - /app/node_modules
+      # Optional: persist logs to host
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lalora-network
+    # Entrypoint script waits for DB and starts dev server
+    command: ['entrypoint.sh']
+
+  # Optional: Prisma Studio (visual database browser)
+  # Uncomment to enable access at http://localhost:5555
+  # prisma-studio:
+  #   image: node:20-alpine
+  #   container_name: lalora-prisma-studio
+  #   working_dir: /app
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     DATABASE_URL: postgresql://${DATABASE_USER:-lalora}:${DATABASE_PASSWORD:-lalora_password}@postgres:5432/${DATABASE_NAME:-lalora_db}
+  #   ports:
+  #     - "5555:5555"
+  #   command: sh -c "npx prisma studio --host 0.0.0.0"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   networks:
+  #     - lalora-network
+
+# Volumes for data persistence
+volumes:
+  postgres_data:
+    driver: local
+
+# Custom network for service communication
+networks:
+  lalora-network:
+    driver: bridge

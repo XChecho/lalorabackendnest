@@ -1,0 +1,54 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Build outputs
+dist
+build
+.next
+.nuxt
+.vercel
+
+# Testing
+coverage
+.jest-cache
+.test
+
+# Environment variables
+.env
+.env.*
+!.env
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation (optional)
+README.md
+CHANGELOG.md
+docs/
+
+# Docker files (no need to include in image)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Logs
+logs
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+.cache
+.temp
+tmp
