@@ -20,13 +20,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      
+
       if (typeof exceptionResponse === 'object') {
         const responseObj = exceptionResponse as any;
         message = responseObj.message || exception.message;
         errors = Array.isArray(responseObj.message) ? responseObj.message : [];
       } else {
-        message = exceptionResponse as string;
+        message = exceptionResponse;
       }
     }
 

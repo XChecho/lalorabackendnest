@@ -63,7 +63,7 @@ services:
     networks:
       - lalora-network
     # Entrypoint script waits for DB and starts dev server
-    command: ['entrypoint.sh']
+    command: ['node', 'dist/src/main.js']
 
   # Optional: Prisma Studio (visual database browser)
   # Uncomment to enable access at http://localhost:5555

@@ -4,23 +4,29 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
   ADMIN
-  CASHIER
   KITCHEN
+  CASHIER
   WAITRESS
   CANCHA_MANAGER
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      Role     @default(WAITRESS)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  email       String   @unique
+  password    String
+  name        String
+  firstName   String?
+  lastName    String?
+  phoneNumber String?
+  role        Role     @default(WAITRESS)
+  active      Boolean  @default(true)
+  recoverCode String?
+  recoverCodeExpires DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
