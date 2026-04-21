@@ -15,6 +15,27 @@ enum Role {
   CANCHA_MANAGER
 }
 
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  IN_PREPARATION
+  READY
+  DELIVERED
+  CANCELLED
+  CLOSED
+}
+
+enum OrderType {
+  LOCAL
+  TAKEOUT
+}
+
 model User {
   id          String   @id @default(uuid())
   email       String   @unique
@@ -29,4 +50,127 @@ model User {
   recoverCodeExpires DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Zone {
+  id        String   @id @default(uuid())
+  name     String
+  icon     String   @default("restaurant")
+  tables   Table[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Table {
+  id        String      @id @default(uuid())
+  name     String
+  zoneId   String
+  zone     Zone       @relation(fields: [zoneId], references: [id])
+  status   TableStatus @default(AVAILABLE)
+  orders   Order[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Category {
+  id           String    @id @default(uuid())
+  name         String
+  description String?
+  icon        String    @default("restaurant")
+  displayOrder Int       @default(0)
+  active      Boolean   @default(true)
+  products    Product[]
+  modifierLists CategoryModifierList[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CategoryModifierList {
+  id         String   @id @default(uuid())
+  name      String
+  required  Boolean  @default(false)
+  multiple  Boolean  @default(false)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  options   CategoryModifierOption[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model CategoryModifierOption {
+  id             String             @id @default(uuid())
+  name           String
+  priceExtra     Float             @default(0)
+  modifierListId String
+  modifierList  CategoryModifierList @relation(fields: [modifierListId], references: [id], onDelete: Cascade)
+  createdAt    DateTime            @default(now())
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name       String
+  description String?
+  price      Float
+  image      String?
+  available  Boolean  @default(true)
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id])
+  modifiers  ProductModifier[]
+  orderItems OrderItem[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model ProductModifier {
+  id         String   @id @default(uuid())
+  name      String
+  options   String[]
+  required Boolean  @default(false)
+  multiple  Boolean  @default(false)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime  @default(now())
+}
+
+model Order {
+  id       String      @id @default(uuid())
+  tableId  String?
+  table   Table?      @relation(fields: [tableId], references: [id])
+  userId  String
+  status  OrderStatus @default(PENDING)
+  orderType OrderType @default(LOCAL)
+  total   Float       @default(0)
+  items   OrderItem[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order    Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product  Product @relation(fields: [productId], references: [id])
+  quantity Int     @default(1)
+  price   Float
+  notes   String?
+  createdAt DateTime @default(now())
+}
+
+enum ExpenseCategory {
+  MATERIA_PRIMA
+  NOMINA
+  SERVICIOS
+  PROVEEDORES
+}
+
+model Expense {
+  id          String         @id @default(uuid())
+  amount     Float
+  category   ExpenseCategory
+  description String
+  date       DateTime       @default(now())
+  userId     String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 }

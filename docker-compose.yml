@@ -45,11 +45,11 @@ services:
       DATABASE_URL: postgresql://${DATABASE_USER:-lalora}:${DATABASE_PASSWORD:-lalora_password}@postgres:5432/${DATABASE_NAME:-lalora_db}
       JWT_SECRET: ${JWT_SECRET}
       NODE_ENV: ${NODE_ENV:-development}
-      PORT: ${PORT:-3000}
+      PORT: ${PORT:-4001}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       LOG_FILE_ENABLED: ${LOG_FILE_ENABLED:-false}
     ports:
-      - '3000:3000'
+      - '4001:4001'
     volumes:
       # Bind mount source code for hot reload
       - .:/app

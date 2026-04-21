@@ -19,7 +19,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { RecoverPasswordDto } from './dto/recover-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { Request } from 'express';
+
+interface DevLoginDto {
+  email: string;
+}
 
 @ApiTags('auth')
 @Controller('auth')
@@ -55,6 +58,41 @@ export class AuthController {
   @ApiOperation({ summary: 'Reset password with code' })
   resetPassword(@Body() resetDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetDto);
+  }
+
+  @Post('dev-login')
+  @ApiOperation({ summary: 'Dev login - localhost only' })
+  devLogin(@Body() devLoginDto: DevLoginDto, @Req() req: any) {
+    const env = process.env.NODE_ENV || 'production';
+    const allowDevLoginAnywhere = process.env.ALLOW_DEV_LOGIN === 'true';
+    if (allowDevLoginAnywhere || env === 'development') {
+      return this.authService.devLogin(devLoginDto.email);
+    }
+    const forwardedFor = req.headers['x-forwarded-for'];
+    const ipFromHeader =
+      typeof forwardedFor === 'string'
+        ? forwardedFor.split(',')[0].trim()
+        : Array.isArray(forwardedFor)
+          ? forwardedFor[0]
+          : null;
+    const ip = req.ip || req.socket?.remoteAddress || ipFromHeader || 'unknown';
+    const isLocalhost =
+      ip === '127.0.0.1' ||
+      ip === '::1' ||
+      ip === '::ffff:127.0.0.1' ||
+      ip?.startsWith('127.') ||
+      ip?.startsWith('172.17.') ||
+      ip?.startsWith('172.18.') ||
+      ip?.startsWith('172.19.') ||
+      ip?.startsWith('172.16.') ||
+      ip === 'localhost';
+    if (!isLocalhost || ip === 'unknown') {
+      console.log('Dev login blocked - IP:', ip);
+      throw new UnauthorizedException(
+        'Dev login only available from localhost',
+      );
+    }
+    return this.authService.devLogin(devLoginDto.email);
   }
 
   @Get('profile')

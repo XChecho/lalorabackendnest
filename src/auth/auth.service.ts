@@ -134,4 +134,27 @@ export class AuthService {
 
     return { message: 'Password reset successfully' };
   }
+
+  async devLogin(email: string) {
+    const user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.active) {
+      throw new UnauthorizedException('User is inactive');
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+      role: user.role,
+    };
+  }
 }
