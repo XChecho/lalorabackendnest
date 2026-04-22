@@ -258,4 +258,21 @@ export class AdminCategoriesController {
   ) {
     return this.adminCategoriesService.deleteModifierOption(optionId);
   }
+
+  @Put(':id/lists/:listId/options/:optionId/restock')
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Restock modifier option (admin)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Modifier option restocked',
+  })
+  @ApiNotFoundResponse({ description: 'Modifier option not found' })
+  restockModifierOption(
+    @Param('id') categoryId: string,
+    @Param('listId') listId: string,
+    @Param('optionId') optionId: string,
+    @Body('quantity') quantity: number,
+  ) {
+    return this.adminCategoriesService.restockModifierOption(optionId, quantity);
+  }
 }

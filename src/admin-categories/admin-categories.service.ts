@@ -64,6 +64,7 @@ export class AdminCategoriesService {
           id: opt.id,
           name: opt.name,
           priceExtra: opt.priceExtra,
+          stock: opt.stock,
         })),
       })),
     };
@@ -248,6 +249,7 @@ export class AdminCategoriesService {
       data: {
         name: optionData.name,
         priceExtra: optionData.priceExtra || 0,
+        stock: optionData.stock ?? 20,
         modifierListId: listId,
       },
     });
@@ -256,6 +258,7 @@ export class AdminCategoriesService {
       id: option.id,
       name: option.name,
       priceExtra: option.priceExtra,
+      stock: option.stock,
     };
   }
 
@@ -273,6 +276,7 @@ export class AdminCategoriesService {
       data: {
         name: data.name,
         priceExtra: data.priceExtra,
+        stock: data.stock,
       },
     });
 
@@ -280,6 +284,31 @@ export class AdminCategoriesService {
       id: updated.id,
       name: updated.name,
       priceExtra: updated.priceExtra,
+      stock: updated.stock,
+    };
+  }
+
+  async restockModifierOption(optionId: string, quantity: number) {
+    const option = await this.prisma.categoryModifierOption.findUnique({
+      where: { id: optionId },
+    });
+
+    if (!option) {
+      throw new NotFoundException(`Modifier option with id ${optionId} not found`);
+    }
+
+    const newStock = Math.max(0, option.stock + quantity);
+
+    const updated = await this.prisma.categoryModifierOption.update({
+      where: { id: optionId },
+      data: { stock: newStock },
+    });
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      priceExtra: updated.priceExtra,
+      stock: updated.stock,
     };
   }
 

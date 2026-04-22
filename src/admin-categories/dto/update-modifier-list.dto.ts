@@ -12,6 +12,11 @@ export class UpdateModifierOptionDto {
   @IsOptional()
   @IsNumber()
   priceExtra?: number;
+
+  @ApiPropertyOptional({ example: 20, description: 'Stock available for this option' })
+  @IsOptional()
+  @IsNumber()
+  stock?: number;
 }
 
 export class UpdateModifierListDto {

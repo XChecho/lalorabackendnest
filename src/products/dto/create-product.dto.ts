@@ -30,6 +30,16 @@ export class CreateProductDto {
   @IsString()
   image?: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  imageId?: string;
+
+  @ApiPropertyOptional({ example: 20 })
+  @IsOptional()
+  @IsNumber()
+  stock?: number;
+
   @ApiPropertyOptional({ default: true })
   @IsOptional()
   @IsBoolean()
@@ -56,6 +66,16 @@ export class UpdateProductDto {
   @IsOptional()
   @IsString()
   image?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  imageId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  stock?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
