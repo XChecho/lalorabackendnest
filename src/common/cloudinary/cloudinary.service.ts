@@ -45,9 +45,8 @@ export class CloudinaryService {
           }
         });
       } else {
-        cloudinary.uploader.upload_stream(
-          uploadOptions,
-          (error, result) => {
+        cloudinary.uploader
+          .upload_stream(uploadOptions, (error, result) => {
             if (error) {
               reject(error);
             } else if (result) {
@@ -57,8 +56,8 @@ export class CloudinaryService {
                 secureUrl: result.secure_url,
               });
             }
-          },
-        ).end(file as Buffer);
+          })
+          .end(file as Buffer);
       }
     });
   }

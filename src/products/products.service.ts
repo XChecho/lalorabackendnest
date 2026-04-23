@@ -28,16 +28,24 @@ export class ProductsService {
     return product;
   }
 
-  async create(data: CreateProductDto & { imageBuffer?: Buffer; imageUrl?: string }) {
+  async create(
+    data: CreateProductDto & { imageBuffer?: Buffer; imageUrl?: string },
+  ) {
     let imageUrl = data.image;
     let imageId = data.imageId;
 
     if (data.imageBuffer) {
-      const result = await this.cloudinary.uploadImage(data.imageBuffer, 'products');
+      const result = await this.cloudinary.uploadImage(
+        data.imageBuffer,
+        'products',
+      );
       imageUrl = result.secureUrl;
       imageId = result.publicId;
     } else if (data.imageUrl) {
-      const result = await this.cloudinary.uploadImage(data.imageUrl, 'products');
+      const result = await this.cloudinary.uploadImage(
+        data.imageUrl,
+        'products',
+      );
       imageUrl = result.secureUrl;
       imageId = result.publicId;
     }
@@ -59,7 +67,10 @@ export class ProductsService {
     });
   }
 
-  async update(id: string, data: UpdateProductDto & { imageBuffer?: Buffer; imageUrl?: string }) {
+  async update(
+    id: string,
+    data: UpdateProductDto & { imageBuffer?: Buffer; imageUrl?: string },
+  ) {
     await this.findById(id);
 
     let imageUrl = data.image;
@@ -70,7 +81,10 @@ export class ProductsService {
       if (existing?.imageId) {
         await this.cloudinary.deleteImage(existing.imageId);
       }
-      const result = await this.cloudinary.uploadImage(data.imageBuffer, 'products');
+      const result = await this.cloudinary.uploadImage(
+        data.imageBuffer,
+        'products',
+      );
       imageUrl = result.secureUrl;
       imageId = result.publicId;
     } else if (data.imageUrl && data.imageUrl !== data.image) {
@@ -78,7 +92,10 @@ export class ProductsService {
       if (existing?.imageId) {
         await this.cloudinary.deleteImage(existing.imageId);
       }
-      const result = await this.cloudinary.uploadImage(data.imageUrl, 'products');
+      const result = await this.cloudinary.uploadImage(
+        data.imageUrl,
+        'products',
+      );
       imageUrl = result.secureUrl;
       imageId = result.publicId;
     }

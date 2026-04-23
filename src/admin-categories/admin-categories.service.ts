@@ -6,7 +6,10 @@ import {
   CreateModifierListDto,
   CreateModifierOptionDto,
 } from './dto/create-modifier-list.dto';
-import { UpdateModifierListDto, UpdateModifierOptionDto } from './dto/update-modifier-list.dto';
+import {
+  UpdateModifierListDto,
+  UpdateModifierOptionDto,
+} from './dto/update-modifier-list.dto';
 
 @Injectable()
 export class AdminCategoriesService {
@@ -242,7 +245,10 @@ export class AdminCategoriesService {
     return { message: 'Modifier list deleted' };
   }
 
-  async createModifierOption(listId: string, optionData: CreateModifierOptionDto) {
+  async createModifierOption(
+    listId: string,
+    optionData: CreateModifierOptionDto,
+  ) {
     await this.findModifierListById(listId);
 
     const option = await this.prisma.categoryModifierOption.create({
@@ -268,7 +274,9 @@ export class AdminCategoriesService {
     });
 
     if (!option) {
-      throw new NotFoundException(`Modifier option with id ${optionId} not found`);
+      throw new NotFoundException(
+        `Modifier option with id ${optionId} not found`,
+      );
     }
 
     const updated = await this.prisma.categoryModifierOption.update({
@@ -294,7 +302,9 @@ export class AdminCategoriesService {
     });
 
     if (!option) {
-      throw new NotFoundException(`Modifier option with id ${optionId} not found`);
+      throw new NotFoundException(
+        `Modifier option with id ${optionId} not found`,
+      );
     }
 
     const newStock = Math.max(0, option.stock + quantity);
@@ -318,7 +328,9 @@ export class AdminCategoriesService {
     });
 
     if (!option) {
-      throw new NotFoundException(`Modifier option with id ${optionId} not found`);
+      throw new NotFoundException(
+        `Modifier option with id ${optionId} not found`,
+      );
     }
 
     await this.prisma.categoryModifierOption.delete({

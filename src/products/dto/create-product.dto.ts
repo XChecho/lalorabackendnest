@@ -3,8 +3,8 @@ import {
   IsOptional,
   IsNumber,
   IsBoolean,
-  IsArray,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateProductDto {
@@ -19,6 +19,7 @@ export class CreateProductDto {
 
   @ApiProperty({ example: 2500 })
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   price: number;
 
   @ApiProperty({ example: 'category-uuid' })
@@ -38,11 +39,13 @@ export class CreateProductDto {
   @ApiPropertyOptional({ example: 20 })
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   stock?: number;
 
   @ApiPropertyOptional({ default: true })
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
   available?: boolean;
 }
 
@@ -60,6 +63,7 @@ export class UpdateProductDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   price?: number;
 
   @ApiPropertyOptional()
@@ -75,10 +79,12 @@ export class UpdateProductDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   stock?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
   available?: boolean;
 }

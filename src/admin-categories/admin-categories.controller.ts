@@ -123,10 +123,7 @@ export class AdminCategoriesController {
   })
   @ApiNotFoundResponse({ description: 'Category not found' })
   @ApiBadRequestResponse({ description: 'Invalid enabled value' })
-  toggleStatus(
-    @Param('id') id: string,
-    @Body('enabled') enabled: boolean,
-  ) {
+  toggleStatus(@Param('id') id: string, @Body('enabled') enabled: boolean) {
     return this.adminCategoriesService.toggleStatus(id, enabled);
   }
 
@@ -170,7 +167,10 @@ export class AdminCategoriesController {
     @Param('id') categoryId: string,
     @Body() createListDto: CreateModifierListDto,
   ) {
-    return this.adminCategoriesService.createModifierList(categoryId, createListDto);
+    return this.adminCategoriesService.createModifierList(
+      categoryId,
+      createListDto,
+    );
   }
 
   @Put(':id/lists/:listId')
@@ -188,7 +188,10 @@ export class AdminCategoriesController {
     @Param('listId') listId: string,
     @Body() updateListDto: UpdateModifierListDto,
   ) {
-    return this.adminCategoriesService.updateModifierList(listId, updateListDto);
+    return this.adminCategoriesService.updateModifierList(
+      listId,
+      updateListDto,
+    );
   }
 
   @Delete(':id/lists/:listId')
@@ -240,7 +243,10 @@ export class AdminCategoriesController {
     @Param('optionId') optionId: string,
     @Body() optionDto: UpdateModifierOptionDto,
   ) {
-    return this.adminCategoriesService.updateModifierOption(optionId, optionDto);
+    return this.adminCategoriesService.updateModifierOption(
+      optionId,
+      optionDto,
+    );
   }
 
   @Delete(':id/lists/:listId/options/:optionId')
@@ -273,6 +279,9 @@ export class AdminCategoriesController {
     @Param('optionId') optionId: string,
     @Body('quantity') quantity: number,
   ) {
-    return this.adminCategoriesService.restockModifierOption(optionId, quantity);
+    return this.adminCategoriesService.restockModifierOption(
+      optionId,
+      quantity,
+    );
   }
 }
