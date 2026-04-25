@@ -19,6 +19,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { RecoverPasswordDto } from './dto/recover-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
 
 interface DevLoginDto {
   email: string;
@@ -101,5 +102,24 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user profile' })
   getProfile(@Req() req: Request & { user: Record<string, unknown> }) {
     return req.user;
+  }
+
+  @Post('refresh')
+  @UseGuards(RefreshTokenGuard)
+  @ApiOperation({ summary: 'Refresh access token using refresh token' })
+  refreshToken(@Req() req: any) {
+    return this.authService.refreshToken(req.user.userId);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Logout and revoke refresh tokens' })
+  logout(@Req() req: any) {
+    const userId = req.user?.sub as string;
+    if (!userId) {
+      throw new UnauthorizedException('Invalid token');
+    }
+    return this.authService.logout(userId);
   }
 }

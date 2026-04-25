@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { AdminCreateCategoryDto, AdminUpdateCategoryDto } from './dto';
 import {
   CreateModifierListDto,
   CreateModifierOptionDto,
@@ -73,7 +72,7 @@ export class AdminCategoriesService {
     };
   }
 
-  async create(data: CreateCategoryDto) {
+  async create(data: AdminCreateCategoryDto) {
     const category = await this.prisma.category.create({
       data: {
         name: data.name,
@@ -91,7 +90,7 @@ export class AdminCategoriesService {
     };
   }
 
-  async update(id: string, data: UpdateCategoryDto) {
+  async update(id: string, data: AdminUpdateCategoryDto) {
     await this.findById(id);
 
     const category = await this.prisma.category.update({

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateTableDto } from './dto/create-table.dto';
+import { TableStatus } from '@prisma/client';
 
 @Injectable()
 export class TablesService {
@@ -13,6 +14,10 @@ export class TablesService {
   async findAll() {
     return this.prisma.table.findMany({
       include: { zone: true },
+      orderBy: [
+        { zone: { name: 'asc' } },
+        { name: 'asc' },
+      ],
     });
   }
 
@@ -20,6 +25,7 @@ export class TablesService {
     return this.prisma.table.findMany({
       where: { zoneId },
       include: { zone: true },
+      orderBy: { name: 'asc' },
     });
   }
 
@@ -44,12 +50,13 @@ export class TablesService {
     return this.prisma.table.create({
       data: {
         name: data.name,
+        capacity: 4,
         zoneId: data.zoneId,
       },
     });
   }
 
-  async updateStatus(id: string, status: any) {
+  async updateStatus(id: string, status: TableStatus) {
     await this.findById(id);
     return this.prisma.table.update({
       where: { id },

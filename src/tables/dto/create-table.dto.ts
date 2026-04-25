@@ -1,5 +1,5 @@
-import { IsString, IsNotEmpty } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateTableDto {
   @ApiProperty({ example: 'Mesa 1' })
@@ -11,4 +11,10 @@ export class CreateTableDto {
   @IsString()
   @IsNotEmpty()
   zoneId: string;
+
+  @ApiPropertyOptional({ example: 4 })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  capacity?: number;
 }

@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../prisma.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
 import { LoginDto } from './dto/login.dto';
@@ -12,6 +13,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { RecoverPasswordDto } from './dto/recover-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Role } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 function generateRecoverCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -20,10 +22,27 @@ function generateRecoverCode(): string {
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
   ) {}
+
+  private async generateRefreshToken(userId: string): Promise<string> {
+    const token = randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    await this.prisma.refreshToken.create({
+      data: {
+        token,
+        userId,
+        expiresAt,
+      },
+    });
+
+    return token;
+  }
 
   async login(loginDto: LoginDto) {
     const user = await this.usersService.findByEmail(loginDto.email);
@@ -51,8 +70,12 @@ export class AuthService {
       role: user.role,
     };
 
+    const access_token = this.jwtService.sign(payload);
+    const refresh_token = await this.generateRefreshToken(user.id);
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token,
+      refresh_token,
       firstName: user.firstName,
       lastName: user.lastName,
       userType: user.role.toLowerCase(),
@@ -152,9 +175,41 @@ export class AuthService {
       role: user.role,
     };
 
+    const access_token = this.jwtService.sign(payload);
+    const refresh_token = await this.generateRefreshToken(user.id);
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token,
+      refresh_token,
       role: user.role,
     };
+  }
+
+  async refreshToken(userId: string) {
+    const user = await this.usersService.findById(userId);
+
+    if (!user || !user.active) {
+      throw new UnauthorizedException('User not found or inactive');
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const access_token = this.jwtService.sign(payload);
+    const refresh_token = await this.generateRefreshToken(user.id);
+
+    return {
+      access_token,
+      refresh_token,
+    };
+  }
+
+  async logout(userId: string) {
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId },
+    });
   }
 }

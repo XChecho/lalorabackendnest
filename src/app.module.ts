@@ -14,6 +14,9 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AdminCategoriesModule } from './admin-categories/admin-categories.module';
+import { AdminZonesModule } from './admin-zones/admin-zones.module';
+import { AdminTablesModule } from './admin-tables/admin-tables.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -29,6 +32,9 @@ import { AdminCategoriesModule } from './admin-categories/admin-categories.modul
     ProductsModule,
     DashboardModule,
     AdminCategoriesModule,
+    AdminZonesModule,
+    AdminTablesModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

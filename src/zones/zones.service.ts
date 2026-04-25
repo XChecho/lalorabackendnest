@@ -2,17 +2,25 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateZoneDto, UpdateZoneDto } from './dto/create-zone.dto';
 
+export interface ZoneWithTableCount {
+  id: string;
+  name: string;
+  icon: string;
+  _count: { tables: number };
+}
+
 @Injectable()
 export class ZonesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
+  async findAll(): Promise<ZoneWithTableCount[]> {
     return this.prisma.zone.findMany({
       include: {
         _count: {
           select: { tables: true },
         },
       },
+      orderBy: { name: 'asc' },
     });
   }
 

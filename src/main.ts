@@ -15,6 +15,11 @@ import { logger as winstonLogger } from './common/logger/winston.config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
   // Override default NestJS logger with our Winston-based implementation
   const customLogger = app.get(WinstonLoggerService);
   app.useLogger(customLogger as unknown as NestLoggerService);

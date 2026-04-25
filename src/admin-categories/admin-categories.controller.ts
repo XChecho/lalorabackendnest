@@ -17,14 +17,7 @@ import {
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { AdminCategoriesService } from './admin-categories.service';
-import {
-  CreateCategoryDto,
-  UpdateCategoryDto,
-  CreateModifierListDto,
-  UpdateModifierListDto,
-  CreateModifierOptionDto,
-  UpdateModifierOptionDto,
-} from './dto';
+import { AdminCreateCategoryDto, AdminUpdateCategoryDto, CreateModifierListDto, UpdateModifierListDto, CreateModifierOptionDto, UpdateModifierOptionDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -92,7 +85,7 @@ export class AdminCategoriesController {
     type: CategoryResponse,
   })
   @ApiBadRequestResponse({ description: 'Invalid data' })
-  create(@Body() createCategoryDto: CreateCategoryDto) {
+  create(@Body() createCategoryDto: AdminCreateCategoryDto) {
     return this.adminCategoriesService.create(createCategoryDto);
   }
 
@@ -108,7 +101,7 @@ export class AdminCategoriesController {
   @ApiBadRequestResponse({ description: 'Invalid data' })
   update(
     @Param('id') id: string,
-    @Body() updateCategoryDto: UpdateCategoryDto,
+    @Body() updateCategoryDto: AdminUpdateCategoryDto,
   ) {
     return this.adminCategoriesService.update(id, updateCategoryDto);
   }
