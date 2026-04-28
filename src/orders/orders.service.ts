@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { AddItemsDto } from './dto/add-items.dto';
+import { LoggerService } from '../common/logger/logger.service';
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   PENDING: ['CONFIRMED', 'CANCELLED'],
@@ -15,12 +20,25 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly logger: LoggerService,
+  ) {}
 
   async create(dto: CreateOrderDto, userId: string) {
+    this.logger.log(`Creating order for user ${userId}`, {
+      userId,
+      tableId: dto.tableId,
+    });
+
     if (dto.tableId) {
-      const table = await this.prisma.table.findUnique({ where: { id: dto.tableId } });
+      const table = await this.prisma.table.findUnique({
+        where: { id: dto.tableId },
+      });
       if (!table) {
+        this.logger.warn(`Table not found: ${dto.tableId}`, {
+          tableId: dto.tableId,
+        });
         throw new NotFoundException(`Table with id ${dto.tableId} not found`);
       }
 
@@ -31,6 +49,10 @@ export class OrdersService {
         },
       });
       if (activeOrder) {
+        this.logger.warn(`Table already has active order: ${dto.tableId}`, {
+          tableId: dto.tableId,
+          activeOrderId: activeOrder.id,
+        });
         throw new BadRequestException('Table already has an active order');
       }
     }
@@ -46,10 +68,18 @@ export class OrdersService {
       },
     });
 
+    this.logger.log(`Order created: ${order.id}`, {
+      orderId: order.id,
+      userId,
+    });
+
     if (dto.tableId) {
       await this.prisma.table.update({
         where: { id: dto.tableId },
         data: { status: 'OCCUPIED' },
+      });
+      this.logger.log(`Table status updated to OCCUPIED: ${dto.tableId}`, {
+        tableId: dto.tableId,
       });
     }
 
@@ -83,7 +113,9 @@ export class OrdersService {
   async addItems(orderId: string, dto: AddItemsDto) {
     const order = await this.findById(orderId);
     if (order.status === 'CLOSED' || order.status === 'CANCELLED') {
-      throw new BadRequestException('Cannot add items to a closed or cancelled order');
+      throw new BadRequestException(
+        'Cannot add items to a closed or cancelled order',
+      );
     }
 
     await this.addItemsInternal(orderId, dto.items);
@@ -100,9 +132,13 @@ export class OrdersService {
     total = existingItems.reduce((sum, item) => sum + item.price, 0);
 
     for (const item of items) {
-      const product = await this.prisma.product.findUnique({ where: { id: item.productId } });
+      const product = await this.prisma.product.findUnique({
+        where: { id: item.productId },
+      });
       if (!product) {
-        throw new NotFoundException(`Product with id ${item.productId} not found`);
+        throw new NotFoundException(
+          `Product with id ${item.productId} not found`,
+        );
       }
 
       const itemTotal = item.price * item.quantity;
@@ -165,7 +201,9 @@ export class OrdersService {
   }
 
   async findActiveByTable(tableId: string) {
-    const table = await this.prisma.table.findUnique({ where: { id: tableId } });
+    const table = await this.prisma.table.findUnique({
+      where: { id: tableId },
+    });
     if (!table) {
       throw new NotFoundException(`Table with id ${tableId} not found`);
     }

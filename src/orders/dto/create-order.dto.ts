@@ -1,4 +1,11 @@
-import { IsString, IsOptional, IsNumber, IsArray, ValidateNested, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsArray,
+  ValidateNested,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -40,6 +47,17 @@ export class ModifierDto {
   @ApiProperty({ example: 'Pollo' })
   @IsString()
   selectedOption: string;
+
+  @ApiPropertyOptional({ example: 5000 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  priceExtra?: number;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  affectsKitchen?: boolean;
 }
 
 export class CreateOrderDto {

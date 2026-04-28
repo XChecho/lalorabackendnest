@@ -17,7 +17,11 @@ import {
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
 import { AdminTablesService } from './admin-tables.service';
-import { UpdateTableDto, ToggleTableStatusDto, CreateTableDto } from '../admin-zones/dto';
+import {
+  UpdateTableDto,
+  ToggleTableStatusDto,
+  CreateTableDto,
+} from '../admin-zones/dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -83,7 +87,10 @@ export class AdminTablesController {
   })
   @ApiNotFoundResponse({ description: 'Table not found' })
   @ApiBadRequestResponse({ description: 'Invalid status' })
-  updateStatus(@Param('id') id: string, @Body() statusDto: ToggleTableStatusDto) {
+  updateStatus(
+    @Param('id') id: string,
+    @Body() statusDto: ToggleTableStatusDto,
+  ) {
     return this.adminTablesService.updateStatus(id, statusDto.status);
   }
 

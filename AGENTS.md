@@ -208,6 +208,35 @@ docker compose down -v
 
 Usar `.env` (gitignored). Ver `.env.example` para variables requeridas.
 
+### 3.4 Entornos de Base de Datos
+
+| Entorno | Archivo | Base de datos | Puerto |
+|---------|---------|---------------|--------|
+| Desarrollo local | `.env` | Docker PostgreSQL | `localhost:5432` |
+| Producción | `.env.production` | Supabase | URL de Supabase |
+
+**Desarrollo local:**
+```bash
+docker compose up -d postgres    # Solo base de datos
+npm run start:dev                # Backend local
+```
+
+**Producción con Supabase:**
+```bash
+cp .env.production.example .env.production
+# Editar .env.production con credenciales de Supabase
+./scripts/deploy-supabase.sh     # Migrar + deploy
+```
+
+### 3.5 DBeaver (Visualización de BD)
+
+Conectar DBeaver a la base de datos local:
+- Host: `localhost`
+- Port: `5432`
+- Database: `lalora_db`
+- Username: `lalora`
+- Password: `lalora_password_123`
+
 ---
 
 ## 4. Testing

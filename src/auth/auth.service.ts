@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RecoverPasswordDto } from './dto/recover-password.dto';
@@ -26,6 +27,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
+    private readonly logger: LoggerService,
   ) {}
 
   private async generateRefreshToken(userId: string): Promise<string> {
@@ -63,6 +65,13 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    await this.prisma.refreshToken.deleteMany({
+      where: {
+        userId: user.id,
+        expiresAt: { lt: new Date() },
+      },
+    });
 
     const payload = {
       sub: user.id,
@@ -125,7 +134,9 @@ export class AuthService {
         userType: user.role,
       };
     } catch (error) {
-      console.error('Error creating user:', error);
+      this.logger.error('Error creating user', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -185,12 +196,16 @@ export class AuthService {
     };
   }
 
-  async refreshToken(userId: string) {
+  async refreshToken(userId: string, oldRefreshToken: string) {
     const user = await this.usersService.findById(userId);
 
     if (!user || !user.active) {
       throw new UnauthorizedException('User not found or inactive');
     }
+
+    await this.prisma.refreshToken.delete({
+      where: { token: oldRefreshToken },
+    });
 
     const payload = {
       sub: user.id,

@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { OrderStatus, ExpenseCategory } from '@prisma/client';
+import { LoggerService } from '../common/logger/logger.service';
 
 @Injectable()
 export class DashboardService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly logger: LoggerService,
+  ) {}
 
   async getDashboard() {
     try {
@@ -132,7 +135,9 @@ export class DashboardService {
         },
       };
     } catch (error) {
-      console.error('Dashboard error:', error);
+      this.logger.error('Dashboard error', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }

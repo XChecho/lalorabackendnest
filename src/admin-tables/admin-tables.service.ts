@@ -11,10 +11,7 @@ export class AdminTablesService {
       include: {
         zone: true,
       },
-      orderBy: [
-        { zone: { name: 'asc' } },
-        { name: 'asc' },
-      ],
+      orderBy: [{ zone: { name: 'asc' } }, { name: 'asc' }],
     });
   }
 
@@ -42,7 +39,10 @@ export class AdminTablesService {
     });
   }
 
-  async updateStatus(id: string, status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED') {
+  async updateStatus(
+    id: string,
+    status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED',
+  ) {
     await this.findById(id);
     return this.prisma.table.update({
       where: { id },
@@ -69,7 +69,9 @@ export class AdminTablesService {
   }
 
   async create(data: { zoneId: string; name: string; capacity: number }) {
-    const zone = await this.prisma.zone.findUnique({ where: { id: data.zoneId } });
+    const zone = await this.prisma.zone.findUnique({
+      where: { id: data.zoneId },
+    });
     if (!zone) {
       throw new NotFoundException(`Zone with id ${data.zoneId} not found`);
     }

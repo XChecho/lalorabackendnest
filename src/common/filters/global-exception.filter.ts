@@ -23,10 +23,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
       if (typeof exceptionResponse === 'object') {
         const responseObj = exceptionResponse as any;
-        message = responseObj.message || exception.message;
-        errors = Array.isArray(responseObj.message) ? responseObj.message : [];
+        const rawMessage = responseObj.message || exception.message;
+
+        if (Array.isArray(rawMessage)) {
+          message = rawMessage.join(', ');
+          errors = rawMessage;
+        } else {
+          message = String(rawMessage);
+        }
       } else {
-        message = exceptionResponse;
+        message = String(exceptionResponse);
       }
     }
 

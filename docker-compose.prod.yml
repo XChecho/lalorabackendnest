@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:16-alpine
+    container_name: lalora-postgres-prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-lalora}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-lalora_password}
+      POSTGRES_DB: ${DATABASE_NAME:-lalora_db}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${DATABASE_USER:-lalora} -d ${DATABASE_NAME:-lalora_db}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - lalora-network
+
+  # NestJS Backend Service (Production)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: lalora-backend-prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${DATABASE_USER:-lalora}:${DATABASE_PASSWORD:-lalora_password}@postgres:5432/${DATABASE_NAME:-lalora_db}
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-4001}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FILE_ENABLED: ${LOG_FILE_ENABLED:-true}
+    ports:
+      - '${HOST_PORT:-4001}:4001'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lalora-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  lalora-network:
+    driver: bridge

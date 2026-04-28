@@ -29,6 +29,12 @@ export class CategoriesController {
     return this.categoriesService.findAll();
   }
 
+  @Get('all-products')
+  @ApiOperation({ summary: 'Get all categories with products and modifiers' })
+  findAllWithProducts() {
+    return this.categoriesService.findAllWithProducts();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get category by ID' })
   findOne(@Param('id') id: string) {

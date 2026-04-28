@@ -50,6 +50,14 @@ export class CreateModifierListDto {
   multiple?: boolean;
 
   @ApiPropertyOptional({
+    example: false,
+    description: 'Whether this modifier affects kitchen workflow',
+  })
+  @IsOptional()
+  @IsBoolean()
+  affectsKitchen?: boolean;
+
+  @ApiPropertyOptional({
     type: [CreateModifierOptionDto],
     description: 'List options',
   })

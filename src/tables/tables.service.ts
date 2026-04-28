@@ -14,10 +14,7 @@ export class TablesService {
   async findAll() {
     return this.prisma.table.findMany({
       include: { zone: true },
-      orderBy: [
-        { zone: { name: 'asc' } },
-        { name: 'asc' },
-      ],
+      orderBy: [{ zone: { name: 'asc' } }, { name: 'asc' }],
     });
   }
 

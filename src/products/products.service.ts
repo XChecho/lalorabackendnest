@@ -13,7 +13,16 @@ export class ProductsService {
   async findByCategory(categoryId: string) {
     return this.prisma.product.findMany({
       where: { categoryId },
-      include: { modifiers: true },
+      include: {
+        modifiers: true,
+        category: {
+          include: {
+            modifierLists: {
+              include: { options: true },
+            },
+          },
+        },
+      },
     });
   }
 

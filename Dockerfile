@@ -34,7 +34,7 @@ COPY entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Expose application port
-EXPOSE 3000
+EXPOSE 4001
 
 # Set entrypoint
 ENTRYPOINT ["entrypoint.sh"]

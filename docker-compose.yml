@@ -49,7 +49,7 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       LOG_FILE_ENABLED: ${LOG_FILE_ENABLED:-false}
     ports:
-      - '4001:4001'
+      - '${HOST_PORT:-4002}:4001'
     volumes:
       # Bind mount source code for hot reload
       - .:/app

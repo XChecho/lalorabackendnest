@@ -146,6 +146,10 @@ export class AdminZonesController {
     @Param('tableId') tableId: string,
     @Body() statusDto: ToggleTableStatusDto,
   ) {
-    return this.adminZonesService.toggleTableStatus(id, tableId, statusDto.status);
+    return this.adminZonesService.toggleTableStatus(
+      id,
+      tableId,
+      statusDto.status,
+    );
   }
 }

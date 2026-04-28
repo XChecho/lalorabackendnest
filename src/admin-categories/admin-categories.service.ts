@@ -62,6 +62,7 @@ export class AdminCategoriesService {
         name: list.name,
         required: list.required,
         multiple: list.multiple,
+        affectsKitchen: list.affectsKitchen,
         options: list.options.map((opt) => ({
           id: opt.id,
           name: opt.name,
@@ -178,6 +179,7 @@ export class AdminCategoriesService {
         name: data.name,
         required: data.required || false,
         multiple: data.multiple || false,
+        affectsKitchen: data.affectsKitchen || false,
         categoryId,
         options: data.options
           ? {
@@ -198,6 +200,7 @@ export class AdminCategoriesService {
       name: list.name,
       required: list.required,
       multiple: list.multiple,
+      affectsKitchen: list.affectsKitchen,
       options: list.options.map((opt) => ({
         id: opt.id,
         name: opt.name,
@@ -215,6 +218,7 @@ export class AdminCategoriesService {
         name: data.name,
         required: data.required,
         multiple: data.multiple,
+        affectsKitchen: data.affectsKitchen,
       },
       include: {
         options: true,
@@ -226,6 +230,7 @@ export class AdminCategoriesService {
       name: list.name,
       required: list.required,
       multiple: list.multiple,
+      affectsKitchen: list.affectsKitchen,
       options: list.options.map((opt) => ({
         id: opt.id,
         name: opt.name,

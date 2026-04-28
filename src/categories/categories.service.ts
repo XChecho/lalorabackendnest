@@ -20,6 +20,31 @@ export class CategoriesService {
     });
   }
 
+  async findAllWithProducts() {
+    return this.prisma.category.findMany({
+      where: { active: true },
+      include: {
+        modifierLists: {
+          include: { options: true },
+        },
+        products: {
+          where: { available: true },
+          include: {
+            modifiers: true,
+            category: {
+              include: {
+                modifierLists: {
+                  include: { options: true },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { displayOrder: 'asc' },
+    });
+  }
+
   async findById(id: string) {
     const category = await this.prisma.category.findUnique({
       where: { id },

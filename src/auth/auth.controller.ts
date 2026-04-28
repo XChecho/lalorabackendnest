@@ -13,6 +13,7 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
 } from '@nestjs/swagger';
+import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,6 +21,7 @@ import { RecoverPasswordDto } from './dto/recover-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { LoggerService } from '../common/logger/logger.service';
 
 interface DevLoginDto {
   email: string;
@@ -28,7 +30,11 @@ interface DevLoginDto {
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly jwtService: JwtService,
+    private readonly logger: LoggerService,
+  ) {}
 
   @Post('login')
   @ApiOperation({ summary: 'User login' })
@@ -88,7 +94,7 @@ export class AuthController {
       ip?.startsWith('172.16.') ||
       ip === 'localhost';
     if (!isLocalhost || ip === 'unknown') {
-      console.log('Dev login blocked - IP:', ip);
+      this.logger.warn('Dev login blocked', { ip });
       throw new UnauthorizedException(
         'Dev login only available from localhost',
       );
@@ -108,7 +114,10 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
   refreshToken(@Req() req: any) {
-    return this.authService.refreshToken(req.user.userId);
+    return this.authService.refreshToken(
+      req.user.userId,
+      req.user.refreshToken,
+    );
   }
 
   @Post('logout')
@@ -116,10 +125,21 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Logout and revoke refresh tokens' })
   logout(@Req() req: any) {
-    const userId = req.user?.sub as string;
+    const userId = req.user?.userId as string;
     if (!userId) {
       throw new UnauthorizedException('Invalid token');
     }
     return this.authService.logout(userId);
+  }
+
+  @Get('token-status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Check token status and remaining time' })
+  tokenStatus(@Req() req: any) {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    const decoded = this.jwtService.decode(token);
+    const expiresIn = decoded?.exp ? decoded.exp * 1000 - Date.now() : 0;
+    return { expiresIn, needsRefresh: expiresIn < 5 * 60 * 1000 };
   }
 }

@@ -33,9 +33,11 @@ export class OrdersController {
   @Post()
   @ApiOperation({ summary: 'Create a new order' })
   @ApiResponse({ status: 201, description: 'Order created' })
-  @ApiBadRequestResponse({ description: 'Invalid data or table already has active order' })
+  @ApiBadRequestResponse({
+    description: 'Invalid data or table already has active order',
+  })
   create(@Body() dto: CreateOrderDto, @Req() req: any) {
-    const userId = req.user?.sub as string;
+    const userId = req.user?.userId as string;
     return this.ordersService.create(dto, userId);
   }
 
@@ -50,7 +52,9 @@ export class OrdersController {
   @Post(':id/items')
   @ApiOperation({ summary: 'Add items to an order' })
   @ApiResponse({ status: 201, description: 'Items added' })
-  @ApiBadRequestResponse({ description: 'Cannot add to closed/cancelled order' })
+  @ApiBadRequestResponse({
+    description: 'Cannot add to closed/cancelled order',
+  })
   @ApiNotFoundResponse({ description: 'Order not found' })
   addItems(@Param('id') id: string, @Body() dto: AddItemsDto) {
     return this.ordersService.addItems(id, dto);
