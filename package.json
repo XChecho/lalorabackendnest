@@ -91,7 +91,19 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/*.module.ts",
+      "!**/dto/**",
+      "!**/main.ts",
+      "!**/prisma.service.ts",
+      "!**/winston.config.ts",
+      "!**/http-logging.middleware.ts",
+      "!**/request-id.middleware.ts",
+      "!**/logger.module.ts",
+      "!**/mail.module.ts",
+      "!**/cloudinary.module.ts",
+      "!**/dashboard/**",
+      "!**/index.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

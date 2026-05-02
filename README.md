@@ -401,6 +401,30 @@ git commit -m "feat(products): add product management module
 
 ## 🧪 Testing
 
+El proyecto utiliza **Jest** para pruebas unitarias y de integración.
+
+### Estructura de Tests
+```
+src/
+├── __mocks__/
+│   └── prisma.mock.ts          # Fábrica de mocks para PrismaService
+├── orders/
+│   ├── orders.service.spec.ts  # Tests unitarios del servicio
+│   └── orders.controller.spec.ts # Tests del controller
+├── products/
+│   └── products.service.spec.ts # Tests unitarios del servicio
+└── app.controller.spec.ts      # Test de scaffold
+
+test/
+└── app.e2e-spec.ts             # Tests end-to-end
+```
+
+### Patrones
+- **Services**: Se mockean PrismaService y LoggerService para probar lógica aislada.
+- **Controllers**: Se mockea el Service para verificar delegación correcta.
+- **E2E**: Se monta la app en memoria con supertest.
+
+### Comandos
 ```bash
 # Unit tests
 npm run test
@@ -413,6 +437,22 @@ npm run test:cov
 
 # Watch mode
 npm run test:watch
+```
+
+### Ejemplo de Test
+```typescript
+// Cada test sigue el patrón Arrange → Act → Assert
+it('debería crear una orden sin mesa', async () => {
+  // Arrange: preparar datos y mocks
+  const dto: CreateOrderDto = { customerName: 'Juan' };
+  prisma.order.create.mockResolvedValue(mockOrder);
+
+  // Act: ejecutar el método bajo prueba
+  const result = await service.create(dto, 'user-1');
+
+  // Assert: verificar resultado esperado
+  expect(result.customerName).toBe('Juan');
+});
 ```
 
 ---

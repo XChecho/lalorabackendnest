@@ -241,9 +241,28 @@ Conectar DBeaver a la base de datos local:
 
 ## 4. Testing
 
-- Tests unitarios con Jest
-- Tests e2e en `/test/`
-- **TODO** nuevo feature debe tener tests asociados
+### Framework
+- **Unit tests**: Jest con `@nestjs/testing` y `ts-jest`.
+- **E2E tests**: Jest con `supertest` y configuración en `test/jest-e2e.json`.
+- **Mock de Prisma**: `src/__mocks__/prisma.mock.ts` — fábrica reutilizable para mockear PrismaService.
+
+### Patrones de Testing
+- **Services**: Mockear PrismaService y LoggerService. Probar lógica de negocio aislada.
+- **Controllers**: Mockear el Service. Verificar que los parámetros de la request llegan correctamente.
+- **E2E**: Montar la app NestJS en memoria con `Test.createTestingModule` + `createNestApplication()`.
+
+### Convenciones
+- Archivos: `*.spec.ts` para unitarios, `*.e2e-spec.ts` para E2E.
+- Todos los tests deben incluir comentarios educativos en español explicando Arrange → Act → Assert.
+- **TODO** nuevo feature debe tener tests asociados.
+
+### Comandos
+```bash
+npm run test        # Ejecutar todos los tests unitarios
+npm run test:watch  # Modo watch para desarrollo
+npm run test:cov    # Tests con reporte de cobertura
+npm run test:e2e    # Tests end-to-end
+```
 
 ---
 
@@ -349,4 +368,4 @@ Antes de hacer push:
 
 ---
 
-**Última actualización**: 2026-04-18
+**Última actualización**: 2026-05-01
