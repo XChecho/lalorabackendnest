@@ -197,7 +197,9 @@ describe('AuthService', () => {
       await expect(service.login(loginDto)).rejects.toThrow(
         UnauthorizedException,
       );
-      await expect(service.login(loginDto)).rejects.toThrow('Invalid credentials');
+      await expect(service.login(loginDto)).rejects.toThrow(
+        'Invalid credentials',
+      );
       expect(usersService.validatePassword).not.toHaveBeenCalled();
     });
 
@@ -228,7 +230,9 @@ describe('AuthService', () => {
       await expect(service.login(loginDto)).rejects.toThrow(
         UnauthorizedException,
       );
-      await expect(service.login(loginDto)).rejects.toThrow('Invalid credentials');
+      await expect(service.login(loginDto)).rejects.toThrow(
+        'Invalid credentials',
+      );
     });
 
     /**
@@ -354,7 +358,11 @@ describe('AuthService', () => {
         tempPassword: 'CustomPass123',
       };
 
-      const admin = { id: 'admin-1', email: 'admin@lalora.com', role: Role.ADMIN };
+      const admin = {
+        id: 'admin-1',
+        email: 'admin@lalora.com',
+        role: Role.ADMIN,
+      };
 
       usersService.findByEmail
         .mockResolvedValueOnce(admin)
@@ -428,7 +436,8 @@ describe('AuthService', () => {
 
       usersService.findByEmail.mockImplementation((email: string) => {
         if (email === adminEmail) return Promise.resolve(admin);
-        if (email === 'existing@lalora.com') return Promise.resolve(existingUser);
+        if (email === 'existing@lalora.com')
+          return Promise.resolve(existingUser);
         return Promise.resolve(null);
       });
 

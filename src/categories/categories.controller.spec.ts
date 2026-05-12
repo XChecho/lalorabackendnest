@@ -15,9 +15,7 @@ describe('CategoriesController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CategoriesController],
-      providers: [
-        { provide: CategoriesService, useValue: mockService },
-      ],
+      providers: [{ provide: CategoriesService, useValue: mockService }],
     }).compile();
 
     controller = module.get<CategoriesController>(CategoriesController);
@@ -55,7 +53,9 @@ describe('CategoriesController', () => {
         },
       ];
 
-      service.findAllWithProducts = jest.fn().mockResolvedValue(mockCategoriesWithProducts);
+      service.findAllWithProducts = jest
+        .fn()
+        .mockResolvedValue(mockCategoriesWithProducts);
 
       const result = await controller.findAllWithProducts();
 

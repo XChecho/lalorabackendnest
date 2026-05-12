@@ -107,12 +107,11 @@ export class AuthService {
 
       const tempPassword = createUserDto.tempPassword || 'ChangeMe123';
 
-      const roleMap: Record<string, any> = {
+      const roleMap: Record<string, Role> = {
         admin: 'ADMIN',
         kitchen: 'KITCHEN',
         cashier: 'CASHIER',
         waiter: 'WAITRESS',
-        cancha_manager: 'CANCHA_MANAGER',
       };
 
       const user = await this.usersService.create({

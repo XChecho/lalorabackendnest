@@ -3,7 +3,12 @@ import { NotFoundException } from '@nestjs/common';
 import { AdminZonesService } from './admin-zones.service';
 import { PrismaService } from '../prisma.service';
 import { createMockPrismaService } from '../__mocks__/prisma.mock';
-import { CreateZoneDto, UpdateZoneDto, AddTablesDto, UpdateTableDto } from './dto';
+import {
+  CreateZoneDto,
+  UpdateZoneDto,
+  AddTablesDto,
+  UpdateTableDto,
+} from './dto';
 
 describe('AdminZonesService', () => {
   let service: AdminZonesService;
@@ -194,9 +199,9 @@ describe('AdminZonesService', () => {
 
       // Act & Assert: verificar que se lanza la excepción
       const updateDto: UpdateZoneDto = { name: 'Nuevo Nombre' };
-      await expect(service.update('zone-inexistente', updateDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.update('zone-inexistente', updateDto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -223,7 +228,9 @@ describe('AdminZonesService', () => {
       expect(prisma.table.deleteMany).toHaveBeenCalledWith({
         where: { zoneId: 'zone-1' },
       });
-      expect(prisma.zone.delete).toHaveBeenCalledWith({ where: { id: 'zone-1' } });
+      expect(prisma.zone.delete).toHaveBeenCalledWith({
+        where: { id: 'zone-1' },
+      });
       expect(result).toEqual(mockDeletedZone);
     });
 
@@ -289,9 +296,9 @@ describe('AdminZonesService', () => {
 
       // Act & Assert: verificar que se lanza la excepción
       const addTablesDto: AddTablesDto = { quantity: 2 };
-      await expect(service.addTables('zone-inexistente', addTablesDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.addTables('zone-inexistente', addTablesDto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -404,7 +411,9 @@ describe('AdminZonesService', () => {
       const result = await service.removeTable('zone-1', 'table-1');
 
       // Assert: verificar que se eliminó la mesa
-      expect(prisma.table.delete).toHaveBeenCalledWith({ where: { id: 'table-1' } });
+      expect(prisma.table.delete).toHaveBeenCalledWith({
+        where: { id: 'table-1' },
+      });
       expect(result).toEqual(mockDeletedTable);
     });
 
@@ -449,9 +458,9 @@ describe('AdminZonesService', () => {
       prisma.table.findUnique.mockResolvedValue(null);
 
       // Act & Assert: verificar que se lanza la excepción
-      await expect(service.removeTable('zone-1', 'table-inexistente')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.removeTable('zone-1', 'table-inexistente'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -483,7 +492,11 @@ describe('AdminZonesService', () => {
       prisma.table.update.mockResolvedValue(mockUpdatedTable);
 
       // Act: ejecutar el método bajo prueba
-      const result = await service.toggleTableStatus('zone-1', 'table-1', 'OCCUPIED');
+      const result = await service.toggleTableStatus(
+        'zone-1',
+        'table-1',
+        'OCCUPIED',
+      );
 
       // Assert: verificar que se actualizó el estado
       expect(prisma.table.update).toHaveBeenCalledWith({

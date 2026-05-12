@@ -1,7 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminZonesController } from './admin-zones.controller';
 import { AdminZonesService } from './admin-zones.service';
-import { CreateZoneDto, UpdateZoneDto, AddTablesDto, UpdateTableDto, ToggleTableStatusDto } from './dto';
+import {
+  CreateZoneDto,
+  UpdateZoneDto,
+  AddTablesDto,
+  UpdateTableDto,
+  ToggleTableStatusDto,
+} from './dto';
 
 describe('AdminZonesController', () => {
   let controller: AdminZonesController;
@@ -176,11 +182,19 @@ describe('AdminZonesController', () => {
     it('debería delegar al servicio para cambiar el estado de una mesa', async () => {
       // Arrange: preparar DTO y mock
       const statusDto: ToggleTableStatusDto = { status: 'OCCUPIED' };
-      const mockUpdated = { id: 'table-1', name: 'Mesa 01', status: 'OCCUPIED' };
+      const mockUpdated = {
+        id: 'table-1',
+        name: 'Mesa 01',
+        status: 'OCCUPIED',
+      };
       jest.spyOn(service, 'toggleTableStatus').mockResolvedValue(mockUpdated);
 
       // Act: ejecutar el método del controlador
-      const result = await controller.toggleTableStatus('zone-1', 'table-1', statusDto);
+      const result = await controller.toggleTableStatus(
+        'zone-1',
+        'table-1',
+        statusDto,
+      );
 
       // Assert: verificar que delegó extrayendo el status del DTO
       expect(service.toggleTableStatus).toHaveBeenCalledWith(

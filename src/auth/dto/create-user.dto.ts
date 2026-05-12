@@ -12,7 +12,6 @@ export enum UserType {
   KITCHEN = 'kitchen',
   CASHIER = 'cashier',
   WAITER = 'waiter',
-  CANCHA_MANAGER = 'cancha_manager',
 }
 
 export class CreateUserDto {

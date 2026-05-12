@@ -169,7 +169,9 @@ describe('RolesGuard', () => {
 /**
  * Helper para crear un mock de ExecutionContext
  */
-function createMockExecutionContext(user: Record<string, unknown>): ExecutionContext {
+function createMockExecutionContext(
+  user: Record<string, unknown>,
+): ExecutionContext {
   const mockRequest = { user };
 
   return {

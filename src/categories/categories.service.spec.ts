@@ -27,8 +27,18 @@ describe('CategoriesService', () => {
   describe('findAll', () => {
     it('debería listar todas las categorías ordenadas por displayOrder', async () => {
       const mockCategories = [
-        { id: 'cat-1', name: 'Bebidas', displayOrder: 1, _count: { products: 5 } },
-        { id: 'cat-2', name: 'Comidas', displayOrder: 2, _count: { products: 10 } },
+        {
+          id: 'cat-1',
+          name: 'Bebidas',
+          displayOrder: 1,
+          _count: { products: 5 },
+        },
+        {
+          id: 'cat-2',
+          name: 'Comidas',
+          displayOrder: 2,
+          _count: { products: 10 },
+        },
       ];
 
       prisma.category.findMany.mockResolvedValue(mockCategories);
@@ -68,9 +78,7 @@ describe('CategoriesService', () => {
             {
               id: 'list-1',
               name: 'Tamaño',
-              options: [
-                { id: 'opt-1', name: 'Grande', priceExtra: 2000 },
-              ],
+              options: [{ id: 'opt-1', name: 'Grande', priceExtra: 2000 }],
             },
           ],
           products: [
@@ -81,7 +89,13 @@ describe('CategoriesService', () => {
               modifiers: [],
               category: {
                 modifierLists: [
-                  { id: 'list-1', name: 'Tamaño', options: [{ id: 'opt-1', name: 'Grande', priceExtra: 2000 }] },
+                  {
+                    id: 'list-1',
+                    name: 'Tamaño',
+                    options: [
+                      { id: 'opt-1', name: 'Grande', priceExtra: 2000 },
+                    ],
+                  },
                 ],
               },
             },
@@ -132,9 +146,7 @@ describe('CategoriesService', () => {
       const mockCategory = {
         id: 'cat-1',
         name: 'Bebidas',
-        products: [
-          { id: 'prod-1', name: 'Café', price: 5000 },
-        ],
+        products: [{ id: 'prod-1', name: 'Café', price: 5000 }],
       };
 
       prisma.category.findUnique.mockResolvedValue(mockCategory);

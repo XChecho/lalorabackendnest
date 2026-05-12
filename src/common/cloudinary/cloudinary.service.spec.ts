@@ -111,7 +111,10 @@ describe('CloudinaryService', () => {
       };
 
       const mockStream = {
-        end: jest.fn().mockImplementation(function (this: any, _buffer: Buffer) {
+        end: jest.fn().mockImplementation(function (
+          this: any,
+          _buffer: Buffer,
+        ) {
           // Simular callback del stream
           this._callback(null, mockResult);
           return this;

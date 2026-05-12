@@ -75,6 +75,7 @@ describe('RefreshTokenGuard', () => {
         id: 'user-1',
         email: 'test@lalora.com',
         role: 'ADMIN',
+        active: true,
       },
     };
 
@@ -135,6 +136,7 @@ describe('RefreshTokenGuard', () => {
         id: 'user-1',
         email: 'test@lalora.com',
         role: 'ADMIN',
+        active: true,
       },
     };
 

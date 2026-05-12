@@ -2,8 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AdminCategoriesController } from './admin-categories.controller';
 import { AdminCategoriesService } from './admin-categories.service';
 import { AdminCreateCategoryDto, AdminUpdateCategoryDto } from './dto';
-import { CreateModifierListDto, CreateModifierOptionDto } from './dto/create-modifier-list.dto';
-import { UpdateModifierListDto, UpdateModifierOptionDto } from './dto/update-modifier-list.dto';
+import {
+  CreateModifierListDto,
+  CreateModifierOptionDto,
+} from './dto/create-modifier-list.dto';
+import {
+  UpdateModifierListDto,
+  UpdateModifierOptionDto,
+} from './dto/update-modifier-list.dto';
 
 describe('AdminCategoriesController', () => {
   let controller: AdminCategoriesController;
@@ -29,12 +35,12 @@ describe('AdminCategoriesController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AdminCategoriesController],
-      providers: [
-        { provide: AdminCategoriesService, useValue: mockService },
-      ],
+      providers: [{ provide: AdminCategoriesService, useValue: mockService }],
     }).compile();
 
-    controller = module.get<AdminCategoriesController>(AdminCategoriesController);
+    controller = module.get<AdminCategoriesController>(
+      AdminCategoriesController,
+    );
     service = module.get<AdminCategoriesService>(AdminCategoriesService);
   });
 
@@ -205,7 +211,10 @@ describe('AdminCategoriesController', () => {
 
       const result = await controller.createModifierList('cat-1', createDto);
 
-      expect(mockService.createModifierList).toHaveBeenCalledWith('cat-1', createDto);
+      expect(mockService.createModifierList).toHaveBeenCalledWith(
+        'cat-1',
+        createDto,
+      );
       expect(result).toEqual(mockCreated);
     });
   });
@@ -228,9 +237,16 @@ describe('AdminCategoriesController', () => {
 
       mockService.updateModifierList.mockResolvedValue(mockUpdated);
 
-      const result = await controller.updateModifierList('cat-1', 'list-1', updateDto);
+      const result = await controller.updateModifierList(
+        'cat-1',
+        'list-1',
+        updateDto,
+      );
 
-      expect(mockService.updateModifierList).toHaveBeenCalledWith('list-1', updateDto);
+      expect(mockService.updateModifierList).toHaveBeenCalledWith(
+        'list-1',
+        updateDto,
+      );
       expect(result).toEqual(mockUpdated);
     });
   });
@@ -265,9 +281,16 @@ describe('AdminCategoriesController', () => {
 
       mockService.createModifierOption.mockResolvedValue(mockCreated);
 
-      const result = await controller.createModifierOption('cat-1', 'list-1', optionDto);
+      const result = await controller.createModifierOption(
+        'cat-1',
+        'list-1',
+        optionDto,
+      );
 
-      expect(mockService.createModifierOption).toHaveBeenCalledWith('list-1', optionDto);
+      expect(mockService.createModifierOption).toHaveBeenCalledWith(
+        'list-1',
+        optionDto,
+      );
       expect(result).toEqual(mockCreated);
     });
   });
@@ -288,9 +311,17 @@ describe('AdminCategoriesController', () => {
 
       mockService.updateModifierOption.mockResolvedValue(mockUpdated);
 
-      const result = await controller.updateModifierOption('cat-1', 'list-1', 'opt-1', updateDto);
+      const result = await controller.updateModifierOption(
+        'cat-1',
+        'list-1',
+        'opt-1',
+        updateDto,
+      );
 
-      expect(mockService.updateModifierOption).toHaveBeenCalledWith('opt-1', updateDto);
+      expect(mockService.updateModifierOption).toHaveBeenCalledWith(
+        'opt-1',
+        updateDto,
+      );
       expect(result).toEqual(mockUpdated);
     });
   });
@@ -301,7 +332,11 @@ describe('AdminCategoriesController', () => {
 
       mockService.deleteModifierOption.mockResolvedValue(mockResult);
 
-      const result = await controller.deleteModifierOption('cat-1', 'list-1', 'opt-1');
+      const result = await controller.deleteModifierOption(
+        'cat-1',
+        'list-1',
+        'opt-1',
+      );
 
       expect(mockService.deleteModifierOption).toHaveBeenCalledWith('opt-1');
       expect(result).toEqual(mockResult);
@@ -319,9 +354,17 @@ describe('AdminCategoriesController', () => {
 
       mockService.restockModifierOption.mockResolvedValue(mockResult);
 
-      const result = await controller.restockModifierOption('cat-1', 'list-1', 'opt-1', 30);
+      const result = await controller.restockModifierOption(
+        'cat-1',
+        'list-1',
+        'opt-1',
+        30,
+      );
 
-      expect(mockService.restockModifierOption).toHaveBeenCalledWith('opt-1', 30);
+      expect(mockService.restockModifierOption).toHaveBeenCalledWith(
+        'opt-1',
+        30,
+      );
       expect(result).toEqual(mockResult);
     });
   });

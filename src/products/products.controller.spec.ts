@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProductsController, AdminProductsController } from './products.controller';
+import {
+  ProductsController,
+  AdminProductsController,
+} from './products.controller';
 import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 
@@ -155,9 +158,7 @@ describe('AdminProductsController (admin)', () => {
    * ============================================================
    */
   it('GET /admin/products/categories/:categoryId debería delegar en findByCategory', async () => {
-    const expected = [
-      { id: 'prod-1', name: 'Cerveza', categoryId: 'cat-1' },
-    ];
+    const expected = [{ id: 'prod-1', name: 'Cerveza', categoryId: 'cat-1' }];
 
     productsService.findByCategory.mockResolvedValue(expected as any);
 
@@ -202,7 +203,9 @@ describe('AdminProductsController (admin)', () => {
       price: 2500,
       categoryId: 'cat-1',
     };
-    const file = { buffer: Buffer.from('fake-image-data') } as Express.Multer.File;
+    const file = {
+      buffer: Buffer.from('fake-image-data'),
+    } as Express.Multer.File;
     const expected = { id: 'prod-1', name: 'Cerveza Poker' };
 
     productsService.create.mockResolvedValue(expected as any);
@@ -250,7 +253,9 @@ describe('AdminProductsController (admin)', () => {
    */
   it('PUT /admin/products/:id con archivo debería agregar imageBuffer al DTO', async () => {
     const dto: UpdateProductDto = { name: 'Cerveza Actualizada' };
-    const file = { buffer: Buffer.from('new-image-data') } as Express.Multer.File;
+    const file = {
+      buffer: Buffer.from('new-image-data'),
+    } as Express.Multer.File;
     const expected = { id: 'prod-1', name: 'Cerveza Actualizada' };
 
     productsService.update.mockResolvedValue(expected as any);

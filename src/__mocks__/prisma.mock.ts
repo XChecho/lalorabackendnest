@@ -38,6 +38,17 @@ export interface MockPrismaDelegate {
 }
 
 export interface MockPrismaService {
+  zone: Pick<
+    MockPrismaDelegate,
+    | 'findMany'
+    | 'findUnique'
+    | 'findFirst'
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'deleteMany'
+    | 'count'
+  >;
   order: Pick<
     MockPrismaDelegate,
     | 'findMany'
@@ -50,15 +61,34 @@ export interface MockPrismaService {
   >;
   table: Pick<
     MockPrismaDelegate,
-    'findMany' | 'findUnique' | 'findFirst' | 'create' | 'update' | 'delete'
+    | 'findMany'
+    | 'findUnique'
+    | 'findFirst'
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'deleteMany'
+    | 'createMany'
   >;
   product: Pick<
     MockPrismaDelegate,
-    'findMany' | 'findUnique' | 'findFirst' | 'create' | 'update' | 'delete' | 'count'
+    | 'findMany'
+    | 'findUnique'
+    | 'findFirst'
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'count'
   >;
   category: Pick<
     MockPrismaDelegate,
-    'findMany' | 'findUnique' | 'findFirst' | 'create' | 'update' | 'delete' | 'count'
+    | 'findMany'
+    | 'findUnique'
+    | 'findFirst'
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'count'
   >;
   categoryModifierList: Pick<
     MockPrismaDelegate,

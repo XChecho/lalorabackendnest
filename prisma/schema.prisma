@@ -12,7 +12,6 @@ enum Role {
   KITCHEN
   CASHIER
   WAITRESS
-  CANCHA_MANAGER
 }
 
 enum TableStatus {
@@ -44,6 +43,8 @@ model User {
   firstName   String?
   lastName    String?
   phoneNumber String?
+  birthdate   DateTime?
+  entryDate   DateTime?
   role        Role     @default(WAITRESS)
   active      Boolean  @default(true)
   recoverCode String?

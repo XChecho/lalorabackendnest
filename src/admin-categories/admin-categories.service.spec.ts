@@ -4,8 +4,14 @@ import { AdminCategoriesService } from './admin-categories.service';
 import { PrismaService } from '../prisma.service';
 import { createMockPrismaService } from '../__mocks__/prisma.mock';
 import { AdminCreateCategoryDto, AdminUpdateCategoryDto } from './dto';
-import { CreateModifierListDto, CreateModifierOptionDto } from './dto/create-modifier-list.dto';
-import { UpdateModifierListDto, UpdateModifierOptionDto } from './dto/update-modifier-list.dto';
+import {
+  CreateModifierListDto,
+  CreateModifierOptionDto,
+} from './dto/create-modifier-list.dto';
+import {
+  UpdateModifierListDto,
+  UpdateModifierOptionDto,
+} from './dto/update-modifier-list.dto';
 
 describe('AdminCategoriesService', () => {
   let service: AdminCategoriesService;
@@ -394,9 +400,7 @@ describe('AdminCategoriesService', () => {
         id: 'list-1',
         name: 'Tamaño',
         required: true,
-        options: [
-          { id: 'opt-1', name: 'Grande', priceExtra: 2000 },
-        ],
+        options: [{ id: 'opt-1', name: 'Grande', priceExtra: 2000 }],
       };
 
       prisma.categoryModifierList.findUnique.mockResolvedValue(mockList);
@@ -552,9 +556,7 @@ describe('AdminCategoriesService', () => {
         required: true,
         multiple: false,
         affectsKitchen: false,
-        options: [
-          { id: 'opt-1', name: 'Grande', priceExtra: 2000 },
-        ],
+        options: [{ id: 'opt-1', name: 'Grande', priceExtra: 2000 }],
       };
 
       prisma.categoryModifierList.findUnique.mockResolvedValue(mockList);
@@ -856,9 +858,9 @@ describe('AdminCategoriesService', () => {
     it('debería lanzar NotFoundException si la opción no existe', async () => {
       prisma.categoryModifierOption.findUnique.mockResolvedValue(null);
 
-      await expect(service.restockModifierOption('opt-ghost', 10)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.restockModifierOption('opt-ghost', 10),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

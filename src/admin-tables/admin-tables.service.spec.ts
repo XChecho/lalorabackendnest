@@ -201,9 +201,9 @@ describe('AdminTablesService', () => {
 
       // Act & Assert: verificar que se lanza la excepción
       const updateDto: UpdateTableDto = { name: 'Nuevo Nombre' };
-      await expect(service.update('table-inexistente', updateDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.update('table-inexistente', updateDto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

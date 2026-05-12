@@ -30,7 +30,12 @@ describe('ZonesController', () => {
       // Arrange: preparar datos mock del servicio
       const mockZones = [
         { id: 'zone-1', name: 'Terraza', icon: 'sun', _count: { tables: 5 } },
-        { id: 'zone-2', name: 'Interior', icon: 'home', _count: { tables: 10 } },
+        {
+          id: 'zone-2',
+          name: 'Interior',
+          icon: 'home',
+          _count: { tables: 10 },
+        },
       ];
       jest.spyOn(service, 'findAll').mockResolvedValue(mockZones);
 

@@ -38,6 +38,13 @@ export class RefreshTokenGuard implements CanActivate {
       throw new UnauthorizedException('Refresh token expired or invalid');
     }
 
+    if (!storedToken.user.active) {
+      this.logger.warn('User account is inactive', {
+        userId: storedToken.userId,
+      });
+      throw new UnauthorizedException('User account is inactive');
+    }
+
     request.user = {
       userId: storedToken.userId,
       email: storedToken.user.email,
