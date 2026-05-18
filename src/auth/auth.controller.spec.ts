@@ -10,6 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { CreateUserDto, UserType } from './dto/create-user.dto';
 import { RecoverPasswordDto } from './dto/recover-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 
 /**
  * ============================================================
@@ -45,6 +46,7 @@ describe('AuthController', () => {
           provide: AuthService,
           useValue: {
             login: jest.fn(),
+            googleLogin: jest.fn(),
             createUser: jest.fn(),
             recoverPassword: jest.fn(),
             resetPassword: jest.fn(),
@@ -122,6 +124,48 @@ describe('AuthController', () => {
       const result = await controller.login(loginDto);
 
       expect(authService.login).toHaveBeenCalledWith(loginDto);
+      expect(result).toEqual(loginResponse);
+    });
+  });
+
+  // ==========================================================
+  // POST /auth/google
+  // ==========================================================
+  describe('googleLogin', () => {
+    /**
+     * ============================================================
+     * PRUEBA 2: POST /auth/google delega al servicio
+     * ============================================================
+     *
+     * QUÉ probamos:
+     * Que el controller recibe el DTO de Google y lo pasa al servicio.
+     *
+     * Arrange: googleDto preparado, authService.googleLogin mockeado
+     * Act: Ejecutamos controller.googleLogin(dto)
+     * Assert: Verificamos que authService.googleLogin fue llamado con dto
+     */
+    it('debería delegar el login de Google al AuthService', async () => {
+      const googleDto: GoogleLoginDto = {
+        idToken: 'valid-google-token',
+        email: 'user@gmail.com',
+        name: 'John Doe',
+        picture: 'https://pic.jpg',
+      };
+
+      const loginResponse = {
+        access_token: 'google_token',
+        refresh_token: 'google_refresh',
+        firstName: 'John',
+        lastName: 'Doe',
+        userType: 'customer',
+        picture: 'https://pic.jpg',
+      };
+
+      authService.googleLogin.mockResolvedValue(loginResponse);
+
+      const result = await controller.googleLogin(googleDto);
+
+      expect(authService.googleLogin).toHaveBeenCalledWith(googleDto);
       expect(result).toEqual(loginResponse);
     });
   });

@@ -15,6 +15,8 @@ import { RecoverPasswordDto } from './dto/recover-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Role } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
+import { GoogleLoginDto } from './dto/google-login.dto';
 
 function generateRecoverCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -57,8 +59,12 @@ export class AuthService {
       throw new UnauthorizedException('User account is inactive');
     }
 
+    if (!user.password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
     const isPasswordValid = await this.usersService.validatePassword(
-      user,
+      user as { password: string },
       loginDto.password,
     );
 
@@ -73,13 +79,16 @@ export class AuthService {
       },
     });
 
-    const payload = {
+    const jwtPayload: Record<string, unknown> = {
       sub: user.id,
       email: user.email,
       role: user.role,
     };
+    if (user.companyId) {
+      jwtPayload.companyId = user.companyId;
+    }
 
-    const access_token = this.jwtService.sign(payload);
+    const access_token = this.jwtService.sign(jwtPayload);
     const refresh_token = await this.generateRefreshToken(user.id);
 
     return {
@@ -179,13 +188,16 @@ export class AuthService {
       throw new UnauthorizedException('User is inactive');
     }
 
-    const payload = {
+    const jwtPayload: Record<string, unknown> = {
       sub: user.id,
       email: user.email,
       role: user.role,
     };
+    if (user.companyId) {
+      jwtPayload.companyId = user.companyId;
+    }
 
-    const access_token = this.jwtService.sign(payload);
+    const access_token = this.jwtService.sign(jwtPayload);
     const refresh_token = await this.generateRefreshToken(user.id);
 
     return {
@@ -206,13 +218,16 @@ export class AuthService {
       where: { token: oldRefreshToken },
     });
 
-    const payload = {
+    const jwtPayload: Record<string, unknown> = {
       sub: user.id,
       email: user.email,
       role: user.role,
     };
+    if (user.companyId) {
+      jwtPayload.companyId = user.companyId;
+    }
 
-    const access_token = this.jwtService.sign(payload);
+    const access_token = this.jwtService.sign(jwtPayload);
     const refresh_token = await this.generateRefreshToken(user.id);
 
     return {
@@ -225,5 +240,83 @@ export class AuthService {
     await this.prisma.refreshToken.deleteMany({
       where: { userId },
     });
+  }
+
+  async googleLogin(googleDto: GoogleLoginDto) {
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+    const ticket = await client.verifyIdToken({
+      idToken: googleDto.idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload || payload.email !== googleDto.email) {
+      throw new UnauthorizedException('Invalid Google token');
+    }
+
+    let user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ googleId: payload.sub }, { email: googleDto.email }],
+      },
+    });
+
+    if (!user) {
+      const nameParts = googleDto.name.split(' ');
+      user = await this.prisma.user.create({
+        data: {
+          email: googleDto.email,
+          name: googleDto.name,
+          firstName: nameParts[0],
+          lastName: nameParts.slice(1).join(' '),
+          googleId: payload.sub,
+          provider: 'GOOGLE',
+          picture: googleDto.picture,
+          role: 'CUSTOMER',
+          password: null,
+        },
+      });
+    }
+
+    if (user && !user.googleId) {
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          googleId: payload.sub,
+          provider: 'GOOGLE',
+          picture: googleDto.picture,
+        },
+      });
+    }
+
+    if (!user.active) {
+      throw new UnauthorizedException('User account is inactive');
+    }
+
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId: user.id, expiresAt: { lt: new Date() } },
+    });
+
+    const jwtPayload2: Record<string, unknown> = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+    if (user.companyId) {
+      jwtPayload2.companyId = user.companyId;
+    }
+
+    const g_access_token = this.jwtService.sign(jwtPayload2);
+    const g_refresh_token = await this.generateRefreshToken(user.id);
+
+    const result = {
+      access_token: g_access_token,
+      refresh_token: g_refresh_token,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      userType: user.role.toLowerCase(),
+      picture: user.picture,
+    };
+    return result;
   }
 }

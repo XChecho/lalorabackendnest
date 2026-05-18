@@ -19,6 +19,7 @@ import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RecoverPasswordDto } from './dto/recover-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { LoggerService } from '../common/logger/logger.service';
@@ -40,6 +41,12 @@ export class AuthController {
   @ApiOperation({ summary: 'User login' })
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Post('google')
+  @ApiOperation({ summary: 'Login or register with Google' })
+  googleLogin(@Body() googleDto: GoogleLoginDto) {
+    return this.authService.googleLogin(googleDto);
   }
 
   @Post('create-user')

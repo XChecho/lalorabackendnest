@@ -32,4 +32,4 @@ npx prisma generate
 
 # Start NestJS application with hot reload
 echo "Starting NestJS application..."
-exec npm run start:dev
+exec pnpm run start:dev

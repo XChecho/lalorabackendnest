@@ -97,9 +97,7 @@ describe('UsersService', () => {
       });
       expect(result).toEqual(recentUsers);
       // Verificar que se registró el log de debug
-      expect(logger.debug).toHaveBeenCalledWith(
-        'Fetching 3 most recent users',
-      );
+      expect(logger.debug).toHaveBeenCalledWith('Fetching 3 most recent users');
     });
 
     it('debe devolver los últimos N usuarios con un limit personalizado', async () => {
@@ -132,9 +130,7 @@ describe('UsersService', () => {
         },
       });
       expect(result).toEqual(recentUsers);
-      expect(logger.debug).toHaveBeenCalledWith(
-        'Fetching 5 most recent users',
-      );
+      expect(logger.debug).toHaveBeenCalledWith('Fetching 5 most recent users');
     });
 
     it('debe excluir el password en el select', async () => {
@@ -247,7 +243,10 @@ describe('UsersService', () => {
       // Segunda llamada: verificar que el email está en uso por otro
       (prisma.user.findUnique as jest.Mock)
         .mockResolvedValueOnce(mockUser)
-        .mockResolvedValueOnce({ id: 'other-user', email: 'updated@example.com' });
+        .mockResolvedValueOnce({
+          id: 'other-user',
+          email: 'updated@example.com',
+        });
 
       // Act & Assert: Verificar que se lanza BadRequestException
       const promise = service.update(mockUser.id, {
@@ -257,7 +256,9 @@ describe('UsersService', () => {
       });
 
       await expect(promise).rejects.toThrow(BadRequestException);
-      await expect(promise).rejects.toThrow('Email already in use by another user');
+      await expect(promise).rejects.toThrow(
+        'Email already in use by another user',
+      );
 
       // Verificar que se registró el error y nunca se llamó a update
       expect(logger.error).toHaveBeenCalledWith(
@@ -551,9 +552,9 @@ describe('UsersService', () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
       // Act & Assert: Verificar que se lanza la excepción
-      await expect(service.resetPasswordById('non-existent-id')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.resetPasswordById('non-existent-id'),
+      ).rejects.toThrow(NotFoundException);
       await expect(
         service.resetPasswordById('non-existent-id'),
       ).rejects.toThrow('User with id non-existent-id not found');

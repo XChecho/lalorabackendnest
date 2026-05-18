@@ -14,12 +14,23 @@ import { LoginDto } from './dto/login.dto';
 import { CreateUserDto, UserType } from './dto/create-user.dto';
 import { RecoverPasswordDto } from './dto/recover-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 import { Role } from '@prisma/client';
-import * as crypto from 'crypto';
 
 // Mock de randomUUID para controlar los tokens generados
 jest.mock('crypto', () => ({
   randomUUID: jest.fn(() => 'mocked-uuid-token'),
+}));
+
+// Mock de google-auth-library para simular verificación de tokens
+const mockGetPayload = jest.fn();
+const mockVerifyIdToken = jest.fn().mockResolvedValue({
+  getPayload: mockGetPayload,
+});
+jest.mock('google-auth-library', () => ({
+  OAuth2Client: jest.fn().mockImplementation(() => ({
+    verifyIdToken: mockVerifyIdToken,
+  })),
 }));
 
 /**
@@ -53,6 +64,11 @@ describe('AuthService', () => {
         {
           provide: PrismaService,
           useValue: {
+            user: {
+              findFirst: jest.fn(),
+              create: jest.fn(),
+              update: jest.fn(),
+            },
             refreshToken: {
               create: jest.fn(),
               delete: jest.fn(),
@@ -804,6 +820,308 @@ describe('AuthService', () => {
       expect(prisma.refreshToken.deleteMany).toHaveBeenCalledWith({
         where: { userId },
       });
+    });
+  });
+
+  // ==========================================================
+  // googleLogin()
+  // ==========================================================
+  describe('googleLogin', () => {
+    const validPayload = {
+      sub: 'google-sub-123',
+      email: 'user@gmail.com',
+      name: 'John Doe',
+      picture: 'https://lh3.googleusercontent.com/pic.jpg',
+    };
+
+    const googleDto: GoogleLoginDto = {
+      idToken: 'valid-google-id-token',
+      email: 'user@gmail.com',
+      name: 'John Doe',
+      picture: 'https://lh3.googleusercontent.com/pic.jpg',
+    };
+
+    beforeEach(() => {
+      process.env.GOOGLE_CLIENT_ID =
+        'test-client-id.apps.googleusercontent.com';
+    });
+
+    afterEach(() => {
+      delete process.env.GOOGLE_CLIENT_ID;
+    });
+
+    /**
+     * ============================================================
+     * PRUEBA 21: Usuario nuevo se crea con rol CUSTOMER
+     * ============================================================
+     *
+     * QUÉ probamos:
+     * Que un usuario que inicia sesión con Google por primera vez
+     * se crea automáticamente con rol CUSTOMER.
+     *
+     * Arrange:
+     * - mockGetPayload retorna datos válidos de Google
+     * - prisma.user.findFirst retorna null (usuario no existe)
+     * - prisma.user.create retorna nuevo usuario CUSTOMER
+     * - jwtService.sign retorna access_token
+     *
+     * Act: Ejecutamos service.googleLogin(dto)
+     *
+     * Assert: Verificamos que el usuario se creó con role CUSTOMER
+     * y que la respuesta incluye los tokens y datos esperados.
+     */
+    it('debería crear un nuevo usuario con rol CUSTOMER cuando es primera vez', async () => {
+      mockGetPayload.mockReturnValue(validPayload);
+
+      const newUser = {
+        id: 'new-user-1',
+        email: 'user@gmail.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'CUSTOMER',
+        active: true,
+        googleId: 'google-sub-123',
+        picture: 'https://lh3.googleusercontent.com/pic.jpg',
+        companyId: null,
+      };
+
+      prisma.user.findFirst.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue(newUser);
+      jwtService.sign.mockReturnValue('google_access_token');
+      prisma.refreshToken.create.mockResolvedValue({
+        token: 'google_refresh_token',
+        userId: 'new-user-1',
+        expiresAt: new Date(),
+      });
+
+      const result = await service.googleLogin(googleDto);
+
+      expect(mockVerifyIdToken).toHaveBeenCalledWith({
+        idToken: 'valid-google-id-token',
+        audience: 'test-client-id.apps.googleusercontent.com',
+      });
+      expect(prisma.user.findFirst).toHaveBeenCalledWith({
+        where: {
+          OR: [{ googleId: 'google-sub-123' }, { email: 'user@gmail.com' }],
+        },
+      });
+      expect(prisma.user.create).toHaveBeenCalledWith({
+        data: {
+          email: 'user@gmail.com',
+          name: 'John Doe',
+          firstName: 'John',
+          lastName: 'Doe',
+          googleId: 'google-sub-123',
+          provider: 'GOOGLE',
+          picture: 'https://lh3.googleusercontent.com/pic.jpg',
+          role: 'CUSTOMER',
+          password: null,
+        },
+      });
+      expect(jwtService.sign).toHaveBeenCalledWith({
+        sub: 'new-user-1',
+        email: 'user@gmail.com',
+        role: 'CUSTOMER',
+      });
+      expect(result).toEqual({
+        access_token: 'google_access_token',
+        refresh_token: 'mocked-uuid-token',
+        firstName: 'John',
+        lastName: 'Doe',
+        userType: 'customer',
+        picture: 'https://lh3.googleusercontent.com/pic.jpg',
+      });
+    });
+
+    /**
+     * ============================================================
+     * PRUEBA 22: Usuario existente se vincula por googleId
+     * ============================================================
+     *
+     * QUÉ probamos:
+     * Que un usuario que ya existe con el mismo email pero sin
+     * googleId se vincula correctamente al hacer login con Google.
+     *
+     * Arrange:
+     * - mockGetPayload retorna datos válidos
+     * - prisma.user.findFirst retorna usuario existente sin googleId
+     * - prisma.user.update añade googleId y provider
+     *
+     * Act: Ejecutamos service.googleLogin(dto)
+     *
+     * Assert: Verificamos que se actualizó googleId y provider
+     */
+    it('debería vincular googleId a un usuario existente sin googleId', async () => {
+      mockGetPayload.mockReturnValue(validPayload);
+
+      const existingUser = {
+        id: 'existing-user-1',
+        email: 'user@gmail.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'WAITRESS',
+        active: true,
+        googleId: null,
+        companyId: null,
+      };
+
+      const updatedUser = {
+        ...existingUser,
+        googleId: 'google-sub-123',
+        provider: 'GOOGLE',
+        picture: 'https://lh3.googleusercontent.com/pic.jpg',
+      };
+
+      prisma.user.findFirst.mockResolvedValue(existingUser);
+      prisma.user.update.mockResolvedValue(updatedUser);
+      jwtService.sign.mockReturnValue('google_access_token');
+      prisma.refreshToken.create.mockResolvedValue({
+        token: 'google_refresh_token',
+        userId: 'existing-user-1',
+        expiresAt: new Date(),
+      });
+
+      const result = await service.googleLogin(googleDto);
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'existing-user-1' },
+        data: {
+          googleId: 'google-sub-123',
+          provider: 'GOOGLE',
+          picture: 'https://lh3.googleusercontent.com/pic.jpg',
+        },
+      });
+      expect(jwtService.sign).toHaveBeenCalledWith({
+        sub: 'existing-user-1',
+        email: 'user@gmail.com',
+        role: 'WAITRESS',
+      });
+      expect(result.userType).toBe('waitress');
+    });
+
+    /**
+     * ============================================================
+     * PRUEBA 23: Token inválido de Google lanza UnauthorizedException
+     * ============================================================
+     *
+     * QUÉ probamos:
+     * Que un token de Google inválido es rechazado.
+     *
+     * Arrange:
+     * - mockGetPayload retorna payload con email diferente
+     *
+     * Act: Ejecutamos service.googleLogin(dto)
+     *
+     * Assert: Verificamos que lanza UnauthorizedException
+     */
+    it('debería lanzar UnauthorizedException cuando el token de Google es inválido', async () => {
+      const mismatchedPayload = {
+        sub: 'google-sub-123',
+        email: 'different@email.com',
+        name: 'Different User',
+      };
+
+      mockGetPayload.mockReturnValue(mismatchedPayload);
+
+      await expect(service.googleLogin(googleDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.googleLogin(googleDto)).rejects.toThrow(
+        'Invalid Google token',
+      );
+      expect(prisma.user.findFirst).not.toHaveBeenCalled();
+    });
+
+    /**
+     * ============================================================
+     * PRUEBA 24: Usuario inactivo lanza UnauthorizedException
+     * ============================================================
+     *
+     * QUÉ probamos:
+     * Que un usuario inactivo no puede iniciar sesión con Google.
+     *
+     * Arrange:
+     * - mockGetPayload retorna datos válidos
+     * - prisma.user.findFirst retorna usuario existente pero inactivo
+     *
+     * Act: Ejecutamos service.googleLogin(dto)
+     *
+     * Assert: Verificamos que lanza UnauthorizedException
+     */
+    it('debería lanzar UnauthorizedException cuando el usuario está inactivo', async () => {
+      mockGetPayload.mockReturnValue(validPayload);
+
+      const inactiveUser = {
+        id: 'inactive-user',
+        email: 'user@gmail.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'CUSTOMER',
+        active: false,
+        googleId: 'google-sub-123',
+        companyId: null,
+      };
+
+      prisma.user.findFirst.mockResolvedValue(inactiveUser);
+
+      await expect(service.googleLogin(googleDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.googleLogin(googleDto)).rejects.toThrow(
+        'User account is inactive',
+      );
+    });
+
+    /**
+     * ============================================================
+     * PRUEBA 25: Usuario existente con googleId inicia sesión directamente
+     * ============================================================
+     *
+     * QUÉ probamos:
+     * Que un usuario que ya tiene googleId vinculado inicia sesión
+     * sin necesidad de update.
+     *
+     * Arrange:
+     * - mockGetPayload retorna datos válidos
+     * - prisma.user.findFirst retorna usuario ya vinculado a Google
+     *
+     * Act: Ejecutamos service.googleLogin(dto)
+     *
+     * Assert: Verificamos que NO se llama a update y se generan tokens
+     */
+    it('debería iniciar sesión directamente si el usuario ya tiene googleId', async () => {
+      mockGetPayload.mockReturnValue(validPayload);
+
+      const googleUser = {
+        id: 'google-user-1',
+        email: 'user@gmail.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'CUSTOMER',
+        active: true,
+        googleId: 'google-sub-123',
+        companyId: 'company-1',
+        picture: 'https://lh3.googleusercontent.com/pic.jpg',
+      };
+
+      prisma.user.findFirst.mockResolvedValue(googleUser);
+      jwtService.sign.mockReturnValue('google_access_token');
+      prisma.refreshToken.create.mockResolvedValue({
+        token: 'google_refresh_token',
+        userId: 'google-user-1',
+        expiresAt: new Date(),
+      });
+
+      const result = await service.googleLogin(googleDto);
+
+      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(jwtService.sign).toHaveBeenCalledWith({
+        sub: 'google-user-1',
+        email: 'user@gmail.com',
+        role: 'CUSTOMER',
+        companyId: 'company-1',
+      });
+      expect(result).toBeDefined();
     });
   });
 });

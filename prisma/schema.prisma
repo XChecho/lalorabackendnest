@@ -7,11 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Provider {
+  LOCAL
+  GOOGLE
+}
+
 enum Role {
   ADMIN
   KITCHEN
   CASHIER
   WAITRESS
+  CUSTOMER
 }
 
 enum TableStatus {
@@ -38,7 +44,7 @@ enum OrderType {
 model User {
   id          String   @id @default(uuid())
   email       String   @unique
-  password    String
+  password    String?
   name        String
   firstName   String?
   lastName    String?
@@ -49,6 +55,11 @@ model User {
   active      Boolean  @default(true)
   recoverCode String?
   recoverCodeExpires DateTime?
+  googleId    String?  @unique
+  provider    Provider @default(LOCAL)
+  picture     String?
+  companyId   String?
+  company     Company? @relation(fields: [companyId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   refreshTokens RefreshToken[]
@@ -63,6 +74,18 @@ model RefreshToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+model Company {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  logo        String?
+  active      Boolean  @default(true)
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Zone {

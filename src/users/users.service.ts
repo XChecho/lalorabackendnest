@@ -35,6 +35,7 @@ export class UsersService {
         active: true,
         birthdate: true,
         entryDate: true,
+        companyId: true,
         createdAt: true,
         updatedAt: true,
       },

@@ -1,43 +1,39 @@
-# Development Dockerfile
-# Uses hot-reload with bind mount for source code
-
-FROM node:20-alpine AS development
-
-# Set working directory
+# Stage 1: Build
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Install system dependencies
-# - netcat-openbsd: for waiting on PostgreSQL port
-# - python3: for potential native module builds
-# - make, g++: for building native dependencies
-RUN apk add --no-cache \
-    netcat-openbsd \
-    python3 \
-    make \
-    g++ \
-    bash
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy package files
 COPY package*.json ./
+COPY pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
-# Install all dependencies (including dev for hot reload)
-RUN npm install
+COPY . .
+RUN pnpm exec prisma generate
+RUN pnpm run build
 
-# Copy Prisma schema (for client generation)
-COPY prisma ./prisma
+# Stage 2: Production
+FROM node:20-alpine AS runner
+WORKDIR /app
 
-# Generate Prisma client
-RUN npx prisma generate
+ENV NODE_ENV=production
+ENV PORT=3001
 
-# Copy entrypoint script
-COPY entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nodejs
 
-# Expose application port
-EXPOSE 4001
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
 
-# Set entrypoint
-ENTRYPOINT ["entrypoint.sh"]
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN pnpm install --frozen-lockfile --prod
+RUN pnpm exec prisma generate
 
-# Default command (overridden by entrypoint)
-CMD ["npm", "run", "start:dev"]
+USER nodejs
+
+EXPOSE 3001
+
+CMD ["node", "dist/src/main"]
